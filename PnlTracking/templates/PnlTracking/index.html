@@ -1,0 +1,352 @@
+{% extends 'base.html' %}
+{% block title %}Index{% endblock %}
+
+{% block css %}
+    <style type="text/css">
+        .div-left {
+            float: left;
+        }
+        .menuDiv {
+          width: 450px;
+          background: rgb(197, 202, 255);
+        }
+        .menuDiv ul.nav li a {
+          text-decoration: none;
+          cursor: pointer;
+          border-left-width: 3px;
+          border-left-style: solid;
+          border-left-color: rgba(60, 141, 188, 0);
+        }
+        {#.menuDiv ul.nav li a:link,#}
+        {#.menuDiv ul.nav li a:visited,#}
+        .menuDiv .nav-first>li>div:hover,
+        .menuDiv .nav-account>li>div:hover,
+        .menuDiv .nav-strategy>li>div:hover{
+          background: rgb(175, 228, 255);
+          color: rgba(255, 255, 255, 1);
+        }
+
+        .menuDiv .nav-first>li>div,
+        .menuDiv .nav-account>li>div,
+        .menuDiv .nav-strategy>li>div,
+        .menuDiv .nav-trader>li>div {
+          height: 40px;
+          line-height: 40px;
+          padding-top: 0;
+          padding-right: 0;
+          padding-bottom: 0;
+          margin: 0;
+        }
+
+        .menuDiv .nav-first>li>div {
+            padding-left: 10px;
+        }
+        .menuDiv .nav-account>li>div{
+            padding-left: 15px;
+        }
+        .menuDiv .nav-strategy>li>div {
+            padding-left: 20px;
+        }
+        .menuDiv .nav-trader>li>div {
+            height: 30px;
+            line-height: 30px;
+            padding-left: 45px;
+        }
+
+        {#.plotDiv {#}
+        {#    width: 600px;#}
+        {#    background: rgb(185, 222, 255);#}
+
+    </style>
+{% endblock %}
+
+{% block content %}
+    <h4>对比项个数：{{ comparers.count }}</h4>
+    <h4>Fund个数：{{ funds.count }}</h4>
+    <h4>Account个数：{{ accounts.count }}</h4>
+    <h4>Strategy个数：{{ strategies.count }}</h4>
+    <h4>Trader个数：{{ traders.count }}</h4>
+
+    <div class="menuDiv div-left" role="navigation">
+        <ul class="nav nav-list nav-first">
+            <li class="">
+                <a href="#">
+                    <span class="icon-left glyphicon glyphicon-home" aria-hidden="true"></span>
+                    <span>SHOW</span>
+                </a>
+            </li>
+
+            {% for fund in funds %}
+                <li>
+                    <div>
+                        <span onclick="plotMain('{{ fund.chain_relation }}')">
+                            <b>F</b>&emsp;{{ fund.comparer_name }}
+                        </span>
+                        <span href="#list-{{ fund.chain_relation|slugify }}" data-toggle="collapse" class="icon-right glyphicon glyphicon-chevron-down">
+                        </span>
+                    </div>
+                    <ul id="list-{{ fund.chain_relation|slugify }}" class="nav nav-list nav-account collapse">
+                        {% for account in accounts %}
+                            {% if fund.chain_relation|add:"*" in account.chain_relation %}
+                                <li>
+                                    <div>
+                                        <span onclick="plotMain('{{ account.chain_relation }}')">
+                                            <b>A</b>&emsp;{{ account.comparer_name }}
+                                        </span>
+                                        <span href="#list-{{ account.chain_relation|slugify }}" data-toggle="collapse" class="icon-right glyphicon glyphicon-chevron-down">
+                                        </span>
+                                    </div>
+                                    <ul id="list-{{ account.chain_relation|slugify }}" class="nav nav-list nav-strategy collapse">
+                                        {% for strategy in strategies %}
+                                            {% if account.chain_relation|add:"*" in strategy.chain_relation %}
+                                                <li>
+                                                    <div>
+                                                        <span onclick="plotMain('{{ strategy.chain_relation }}')">
+                                                            <b>S</b>&emsp;{{ strategy.comparer_name }}
+                                                        </span>
+                                                        <span href="#list-{{ strategy.chain_relation|slugify }}" data-toggle="collapse" class="icon-right glyphicon glyphicon-chevron-down">
+                                                        </span>
+                                                    </div>
+                                                    <ul id="list-{{ strategy.chain_relation|slugify }}" class="nav nav-list nav-trader collapse">
+                                                        {% for trader in traders %}
+                                                            {% if strategy.chain_relation|add:"*" in trader.chain_relation %}
+                                                                <li>
+                                                                    <div>
+                                                                        <span onclick="plotMain('{{ trader.chain_relation }}')">
+                                                                            {{ trader.comparer_name }}
+                                                                        </span>
+                                                                    </div>
+                                                                </li>
+                                                            {% endif %}
+                                                        {% endfor %}
+                                                    </ul>
+                                                </li>
+                                            {% endif %}
+                                        {% endfor %}
+                                    </ul>
+                                </li>
+                            {% endif %}
+                        {% endfor %}
+                    </ul>
+                </li>
+            {% endfor %}
+        </ul>
+    </div>
+
+    <div id="show">
+        <div onclick="plotMain('Prop5')">Ajax 加载字典</div>
+        <div id="result" style="height: 200px; width: 1000px; background-color: #b8ee9b">
+            <p id="dict_result"></p>
+        </div>
+        <div id="plotMain" style="height:500px; width: 1000px;"></div>
+    </div>
+
+    <script type="text/javascript">
+        //
+        var doc_result = $('#dict_result');
+        function echartsPlot(plotDiv, figure_id, figure_date, figure_pnl) {
+            var figureDiv = document.createElement("div");
+            figureDiv.style.height = '500px';
+            figureDiv.style.width = '1000px';
+
+            //指定图标的配置和数据
+            var option = {
+                title:{
+                    text: figure_id
+                },
+                tooltip:{},
+                legend:{
+                    data:['用户来源']
+                },
+                xAxis:{
+                    data:figure_date
+                },
+                yAxis:{
+                },
+                series:figure_pnl
+            };
+            //初始化echarts实例
+            var myChart = echarts.init(figureDiv);
+            //使用制定的配置项和数据显示图表
+            myChart.setOption(option);
+            plotDiv.append(figureDiv)
+        }
+
+        function plotMain(comparer_name){
+            var plotDiv = document.getElementById('plotMain');
+            // 读取所有数据，选择comparer_name的数据
+            var comparerData = getComparerData(comparer_name);
+            // 遍历数据，转换格式，加工，并画图
+            $.each(comparerData, function (figureId, figureData) {
+                var plottingData = pnlListDataProcess(figureId, figureData);
+                echartsPlot(plotDiv, plottingData[0], plottingData[1], plottingData[2]);
+            })
+        }
+
+        function getComparerData(comparer_name) {
+            // 遍历所有数据，查找所需要的    id=comparer_name
+            var satisfiedPnl = {};
+            $.ajaxSettings.async = false;
+            $.getJSON('/pnltracking/ajax_pnl/', function (ret){              // ret 为所有数据
+                var pnlList = ret.pnl;                      // ret.pnl为[数组]
+                $.each(pnlList, function (i, itemDict) {
+                    // i 为索引，item为遍历值
+                    if (itemDict.comparer_id === comparer_name) {
+                        var item_comparer_id = itemDict.comparer_id;
+                        var item_figure_id = itemDict.figure_id;
+                        var item_item = itemDict.item;
+                        var item_date = itemDict.date;
+                        var item_pnl = itemDict.pnl;
+
+                        {#doc_result.append(item_figure_id + item_item + item_date + item_pnl + '<br>');#}
+                        if (satisfiedPnl.hasOwnProperty(item_figure_id)) {
+                        } else {
+                            satisfiedPnl[item_figure_id] = {};
+                            satisfiedPnl[item_figure_id].items = [];
+                            satisfiedPnl[item_figure_id].datePnl = {};
+                        }
+                        if (satisfiedPnl[item_figure_id].datePnl.hasOwnProperty(item_date)) {
+                        } else {
+                            satisfiedPnl[item_figure_id].datePnl[item_date] = {};
+                        }
+                        if (satisfiedPnl[item_figure_id].items.includes(item_item)) {
+                        } else {
+                            satisfiedPnl[item_figure_id].items.push(item_item);
+                        }
+                        satisfiedPnl[item_figure_id].datePnl[item_date][item_item] = item_pnl;
+                    }
+                });
+            });
+            doc_result.append('Geting Comparer Figures Name:' + Object.getOwnPropertyNames(satisfiedPnl) + '<br>');
+            return satisfiedPnl
+        }
+
+        // 数据结构转换
+        // 遍历每一个figure，  1个figure有多个items、1个date数轴
+        function pnlListDataProcess(figure_id, figureData){
+            doc_result.append('Checking this figure:      ' + figure_id + '<br>');
+            var figureItemsArray = figureData.items;
+            var figureItemsPnl = figureData.datePnl;           // 包含各日期的各item的pnl
+            var itemsData = {};
+            var itemsDataArray = [];
+            // 初始化 itemsData[item_id]
+            for (i=0; i<figureItemsArray.length; i++){
+                var item_id =figureItemsArray[i];
+                itemsData[item_id] = {
+                    'name': item_id,
+                    'type': 'line',
+                    'data': []
+                };
+            }
+            // 数据结构转换
+            var dateArray = Object.keys(figureItemsPnl);
+            dateArray = dateArray.sort();                    // 应该换为 sort() 反转日期数组,从小到大
+            for (i=0; i<dateArray.length; i++) {
+                var datei = dateArray[i];
+                $.each(itemsData, function (itemAId, itemA) {
+                    if (itemAId in figureItemsPnl[datei]){
+                        itemsData[itemAId].data.push(figureItemsPnl[datei][itemAId])
+                    } else {
+                        itemsData[itemAId].data.push(0)
+                    }
+                });
+            }
+            // data.Pnl 去零
+            var setNanPnlData = function(pnlDataArray){
+                var firstSetData = [];
+                var setNan = 1;
+                for (i=0; i<pnlDataArray.length; i++){
+                    if (setNan === 0){
+                        firstSetData.push(pnlDataArray[i])
+                    } else {
+                        if (pnlDataArray[i] === 0) {
+                            firstSetData.push(null);
+                        } else {
+                            firstSetData.push(pnlDataArray[i]);
+                            setNan = 0;
+                        }
+                    }
+                }
+                firstSetData = firstSetData.reverse();
+                var finallyData = [];
+                setNan = 1;
+                for (i=0; i<firstSetData.length; i++){
+                    if (setNan === 0){
+                        finallyData.push(firstSetData[i])
+                    } else {
+                        if (firstSetData[i] === 0) {
+                            finallyData.push(null);
+                        } else {
+                            finallyData.push(firstSetData[i]);
+                            setNan = 0;
+                        }
+                    }
+                }
+                return finallyData.reverse()
+            };
+            $.each(itemsData, function (itemAId, itemA) {
+                itemA.data = setNanPnlData(itemA.data)
+            });
+            // date日期序列
+            var figureDateArray = dateArray;
+            // 将对象itemsData 转换为 数组itemsDataArray
+            $.each(itemsData, function (item_id, item_Data) {
+                // 累加itemPnl
+                var oldPnl = item_Data.data;
+                var pnlLength = oldPnl.length;
+                var newPnl = [];
+
+                if (!oldPnl[0]){
+                    newPnl.push(oldPnl[0])
+                } else {
+                    newPnl.push(null)
+                }
+                for (i=1; i<pnlLength; i++){
+                    var pnl = oldPnl[i];
+                    if (pnl==null) {
+                        newPnl.push(null)
+                    } else {
+                        if (newPnl[i-1]==null) {
+                            newPnl.push(pnl)
+                        } else {
+                            newPnl.push(pnl+newPnl[i-1])
+                        }
+                    }
+                }
+                itemsDataArray.push({
+                    'name': item_Data.name,
+                    'type': 'line',
+                    'data': newPnl
+                });
+            });
+            return [figure_id, figureDateArray, itemsDataArray]
+        /*
+            itemsData = {
+                item_id_A:{
+                    name: item_id,
+                    type: 'line',
+                    data: [],
+                },
+                item_id_B:{
+                    name: item_id,
+                    type: 'line',
+                    data: [],
+                }
+            }
+            itemsDataArray = [
+                {
+                    name: item_id,
+                    type: 'line',
+                    data: [],
+                },
+                {}
+            ]
+        */
+        }
+
+
+
+    </script>
+{% endblock %}
+
+

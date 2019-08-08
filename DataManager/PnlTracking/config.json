@@ -1,0 +1,78 @@
+{
+  "skip_strategies": [
+    "Id807035.MFA"
+  ],
+  "holiday_file": "F:\\TradingReview\\DataManager\\PnlTracking\\MappingTable\\Holidays.csv",
+  "tracking_info": {
+    "live": {
+      "path_mapping": "F:\\TradingReview\\DataManager\\PnlTracking\\MappingTable\\Mapping_LivePm_Trader.xlsx",
+      "path_save_root": "F:\\TradingReview\\DataManager\\PnlTracking\\output",
+      "span":120,
+      "db": {
+        "1": {
+          "db": "Platinum.Settle",
+          "host": "atsasset.com",
+          "user": "sa",
+          "pwd": "st@s2013"
+        },
+        "2": {
+          "db": "Platinum.PM",
+          "host": "192.168.1.101",
+          "user": "sa",
+          "pwd": "st@s2013"
+        }
+      },
+      "save_data": {
+        "to_csv": {
+          "is_to_csv": 1,
+          "path": "F:\\TradingReview\\DataManager\\data_save"
+        },
+        "to_db": {
+          "is_to_db": 0,
+          "info": {
+            "host": "127.0.0.1",
+            "port": 3306,
+            "user": "root",
+            "pwd": "st@s2013",
+            "db": "tradingreview"
+          }
+        }
+      }
+    },
+    "paper": {
+      "path_mapping": "F:\\TradingReview\\DataManager\\PnlTracking\\MappingTable\\Mapping_PTPm_Trader.xlsx",
+      "path_save_root": "F:\\TradingReview\\DataManager\\PnlTracking\\output",
+      "span":80,
+      "db": {
+        "1": {
+          "db": "Platinum.Settle.Paper",
+          "host": "atsasset.com",
+          "user": "sa",
+          "pwd": "st@s2013"
+        },
+        "2": {
+          "db": "Platinum.PM",
+          "host": "192.168.1.101",
+          "user": "sa",
+          "pwd": "st@s2013"
+        }
+      },
+      "save_data": {
+        "to_csv": {
+          "is_to_csv": 0,
+          "path": "F:\\TradingReview\\DataManager\\data_save"
+        },
+        "to_db": {
+          "is_to_db": 0,
+          "info": {
+            "host": "127.0.0.1",
+            "port": 3306,
+            "user": "root",
+            "pwd": "st@s2013",
+            "db": "tradingreview"
+          }
+        }
+      }
+    }
+  }
+}
